@@ -108,6 +108,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/spacing_large"
+            android:contentDescription="@string/venue_check_in_action"
             app:bump_vibration="50"
             app:complete_icon="@drawable/ic_sync"
             app:inner_color="@android:color/black"

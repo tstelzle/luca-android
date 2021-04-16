@@ -8,12 +8,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.ncorti.slidetoact.SlideToActView;
 
 import de.culture4life.luca.R;
 import de.culture4life.luca.ui.BaseFragment;
 import de.culture4life.luca.ui.dialog.BaseDialogFragment;
+import de.culture4life.luca.util.AccessibilityServiceUtil;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -62,6 +64,7 @@ public class MeetingFragment extends BaseFragment<MeetingViewModel> {
                         if (!isHostingMeeting) {
                             navigationController.navigate(R.id.action_meetingFragment_to_qrCodeFragment);
                         }
+                        AccessibilityServiceUtil.speak(getContext(), getString(R.string.meeting_was_ended_hint));
                     });
                     observe(viewModel.getQrCode(), value -> qrCodeImageView.setImageBitmap(value));
                     observe(viewModel.getIsLoading(), loading -> loadingView.setVisibility(loading ? View.VISIBLE : View.GONE));
@@ -70,6 +73,13 @@ public class MeetingFragment extends BaseFragment<MeetingViewModel> {
                     meetingDescriptionInfoImageView.setOnClickListener(v -> showMeetingDescriptionInfo());
                     meetingMembersInfoImageView.setOnClickListener(v -> showMeetingMembersInfo());
                     slideToActView.setOnSlideCompleteListener(view -> viewModel.onMeetingEndRequested());
+                    slideToActView.setOnSlideUserFailedListener((view, isOutside) -> {
+                        if (AccessibilityServiceUtil.isGoogleTalkbackActive(getContext())) {
+                            viewModel.onMeetingEndRequested();
+                        } else {
+                            Toast.makeText(getContext(), R.string.venue_slider_clicked, Toast.LENGTH_SHORT).show();
+                        }
+                    });
                     slideToActView.setReversed(true);
 
                     observe(viewModel.getIsLoading(), loading -> {
@@ -77,7 +87,6 @@ public class MeetingFragment extends BaseFragment<MeetingViewModel> {
                             slideToActView.resetSlider();
                         }
                     });
-
                 }));
     }
 

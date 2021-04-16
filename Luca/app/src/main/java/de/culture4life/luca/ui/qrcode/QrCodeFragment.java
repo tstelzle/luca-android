@@ -5,6 +5,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Size;
@@ -17,6 +18,7 @@ import android.widget.TextView;
 import de.culture4life.luca.BuildConfig;
 import de.culture4life.luca.R;
 import de.culture4life.luca.ui.BaseFragment;
+import de.culture4life.luca.ui.ViewError;
 import de.culture4life.luca.ui.dialog.BaseDialogFragment;
 import de.culture4life.luca.ui.registration.RegistrationActivity;
 
@@ -25,7 +27,6 @@ import java.util.concurrent.Executors;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.camera.core.Camera;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.Preview;
@@ -45,6 +46,8 @@ public class QrCodeFragment extends BaseFragment<QrCodeViewModel> {
     private PreviewView cameraPreviewView;
     private View loadingView;
     private TextView qrCodeCaptionTextView;
+    private TextView headingTextView;
+    private TextView subHeadingTextView;
 
     private TextView nameTextView;
     private TextView addressTextView;
@@ -64,6 +67,8 @@ public class QrCodeFragment extends BaseFragment<QrCodeViewModel> {
         qrCodeImageView = view.findViewById(R.id.qrCodeImageView);
         cameraPreviewView = view.findViewById(R.id.cameraPreviewView);
         loadingView = view.findViewById(R.id.loadingLayout);
+        headingTextView = view.findViewById(R.id.headingTextView);
+        subHeadingTextView = view.findViewById(R.id.subHeadingTextView);
 
         qrCodeCaptionTextView = view.findViewById(R.id.qrCodeCaptionTextView);
 
@@ -174,6 +179,30 @@ public class QrCodeFragment extends BaseFragment<QrCodeViewModel> {
         dialogFragment.show();
     }
 
+    private void showCameraDialog() {
+        showCameraDialog(false);
+    }
+
+    private void showCameraDialog(boolean directToSettings) {
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getContext())
+                .setTitle(R.string.camera_access_title)
+                .setMessage(R.string.camera_access_description)
+                .setNegativeButton(R.string.action_cancel, (dialog, which) -> dialog.cancel());
+
+        if (directToSettings) {
+            builder = builder.setPositiveButton(R.string.action_settings, (dialog, which) -> {
+                application.openAppSettings();
+                dialog.dismiss();
+            });
+        } else {
+            builder = builder.setPositiveButton(R.string.action_enable, (dialog, which) -> {
+                showCameraPreview();
+                dialog.dismiss();
+            });
+        }
+        new BaseDialogFragment(builder).show();
+    }
+
     private void showJoinPrivateMeetingDialog(@NonNull String privateMeetingUrl) {
         BaseDialogFragment dialogFragment = new BaseDialogFragment(new MaterialAlertDialogBuilder(getContext())
                 .setTitle(R.string.meeting_join_heading)
@@ -195,7 +224,7 @@ public class QrCodeFragment extends BaseFragment<QrCodeViewModel> {
 
     private void toggleCameraPreview() {
         if (cameraPreviewDisposable == null) {
-            showCameraPreview();
+            showCameraDialog();
         } else {
             hideCameraPreview();
         }
@@ -206,7 +235,9 @@ public class QrCodeFragment extends BaseFragment<QrCodeViewModel> {
                 .doOnComplete(() -> {
                     cameraPreviewView.setVisibility(View.VISIBLE);
                     qrCodeImageView.setVisibility(View.GONE);
-                    cameraToggleButton.setText(R.string.show_qr_code);
+                    cameraToggleButton.setText(R.string.close_qr_code_scanner);
+                    headingTextView.setText(R.string.scan_qr_code);
+                    subHeadingTextView.setText(R.string.scan_qr_code_description);
                 })
                 .andThen(startCameraPreview())
                 .doOnError(throwable -> Timber.w("Unable to show camera preview: %s", throwable.toString()))
@@ -225,6 +256,8 @@ public class QrCodeFragment extends BaseFragment<QrCodeViewModel> {
         cameraPreviewView.setVisibility(View.GONE);
         qrCodeImageView.setVisibility(View.VISIBLE);
         cameraToggleButton.setText(R.string.scan_qr_code);
+        headingTextView.setText(R.string.navigation_check_in);
+        subHeadingTextView.setText(R.string.qr_code_description);
     }
 
     private Completable getCameraPermission() {
@@ -233,6 +266,7 @@ public class QrCodeFragment extends BaseFragment<QrCodeViewModel> {
                     if (granted) {
                         return Completable.complete();
                     } else {
+                        showCameraPermissionPermanentlyDeniedError();
                         return Completable.error(new IllegalStateException("Camera permission missing"));
                     }
                 });
@@ -269,7 +303,7 @@ public class QrCodeFragment extends BaseFragment<QrCodeViewModel> {
         imageAnalysis.setAnalyzer(Executors.newSingleThreadExecutor(), viewModel);
 
         preview.setSurfaceProvider(cameraPreviewView.getSurfaceProvider());
-        Camera camera = cameraProvider.bindToLifecycle((LifecycleOwner) getContext(), cameraSelector, imageAnalysis, preview);
+        cameraProvider.bindToLifecycle((LifecycleOwner) getContext(), cameraSelector, imageAnalysis, preview);
     }
 
     private void unbindCameraPreview() {
@@ -277,6 +311,21 @@ public class QrCodeFragment extends BaseFragment<QrCodeViewModel> {
             cameraProvider.unbindAll();
             cameraProvider = null;
         }
+    }
+
+    private void showCameraPermissionPermanentlyDeniedError() {
+        Context context = getContext();
+        if (context == null) {
+            return;
+        }
+        ViewError viewError = new ViewError.Builder(context)
+                .withTitle(getString(R.string.missing_permission_arg, getString(R.string.permission_name_camera)))
+                .withDescription(getString(R.string.missing_permission_arg, getString(R.string.permission_name_camera)))
+                .withResolveLabel(getString(R.string.action_resolve))
+                .withResolveAction(Completable.fromAction(() -> showCameraDialog(true)))
+                .build();
+
+        showErrorAsSnackbar(viewError);
     }
 
 }

@@ -19,8 +19,8 @@ import de.culture4life.luca.R;
 import de.culture4life.luca.checkin.CheckInData;
 import de.culture4life.luca.checkin.CheckInManager;
 import de.culture4life.luca.crypto.AsymmetricCipherProvider;
-import de.culture4life.luca.crypto.DailyKeyPairPublicKeyWrapper;
 import de.culture4life.luca.crypto.CryptoManager;
+import de.culture4life.luca.crypto.DailyKeyPairPublicKeyWrapper;
 import de.culture4life.luca.meeting.MeetingAdditionalData;
 import de.culture4life.luca.meeting.MeetingManager;
 import de.culture4life.luca.network.NetworkManager;
@@ -283,7 +283,7 @@ public class QrCodeViewModel extends BaseViewModel implements ImageAnalysis.Anal
                 .flatMap(encodedQrCodeData -> cryptoManager.getHashProvider().hash(encodedQrCodeData)
                         .flatMap(checksum -> CryptoManager.trim(checksum, 4))
                         .flatMap(checksum -> CryptoManager.concatenate(encodedQrCodeData, checksum)))
-                .flatMap(SerializationUtil::serializeToZ85);
+                .flatMap(SerializationUtil::serializeBase32);
     }
 
     private Single<Bitmap> generateQrCode(@NonNull String data) {

@@ -56,7 +56,6 @@ public class VenueDetailsViewModel extends BaseViewModel {
     private final MutableLiveData<Boolean> hasLocationRestriction = new MutableLiveData<>();
     private final MutableLiveData<Boolean> shouldEnableAutomaticCheckOut = new MutableLiveData<>();
     private final MutableLiveData<Boolean> shouldEnableLocationServices = new MutableLiveData<>();
-    private final MutableLiveData<Boolean> shouldShowLocationAccessDialog = new MutableLiveData<>();
 
     private boolean isLocationPermissionGranted = false;
     private boolean isBackgroundLocationPermissionGranted = false;
@@ -97,18 +96,14 @@ public class VenueDetailsViewModel extends BaseViewModel {
     }
 
     private Completable initializeAutomaticCheckout() {
-        return Completable.mergeArray(
-                Single.fromCallable(locationManager::hasLocationPermission)
-                        .flatMapCompletable(hasLocationAccess -> update(shouldShowLocationAccessDialog, !hasLocationAccess)),
-                checkInManager.isAutomaticCheckoutEnabled()
-                        .flatMapCompletable(automaticCheckoutEnabled -> Completable.defer(() -> {
-                            if (automaticCheckoutEnabled) {
-                                return startObservingAutomaticCheckOutErrors();
-                            } else {
-                                return Completable.complete();
-                            }
-                        }).andThen(update(shouldEnableAutomaticCheckOut, automaticCheckoutEnabled)))
-        );
+        return checkInManager.isAutomaticCheckoutEnabled()
+                .flatMapCompletable(automaticCheckoutEnabled -> Completable.defer(() -> {
+                    if (automaticCheckoutEnabled) {
+                        return startObservingAutomaticCheckOutErrors();
+                    } else {
+                        return Completable.complete();
+                    }
+                }).andThen(update(shouldEnableAutomaticCheckOut, automaticCheckoutEnabled)));
     }
 
     private Completable startObservingAutomaticCheckOutErrors() {
@@ -132,7 +127,12 @@ public class VenueDetailsViewModel extends BaseViewModel {
 
     private Completable keepCheckedInStateUpdated() {
         return checkInManager.getCheckedInStateChanges()
-                .flatMapCompletable(checkedInState -> update(isCheckedIn, checkedInState));
+                .flatMapCompletable(checkedInState ->
+                        Completable.fromAction(() -> {
+                            if (!checkedInState) {
+                                updateAsSideEffect(shouldEnableAutomaticCheckOut, false);
+                            }
+                        }).andThen(update(isCheckedIn, checkedInState)));
     }
 
     private Completable keepCheckedInTimerUpdated() {
@@ -239,12 +239,10 @@ public class VenueDetailsViewModel extends BaseViewModel {
 
     private boolean canEnableAutomaticCheckoutActivation() {
         if (ActivityCompat.checkSelfPermission(application, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            updateAsSideEffect(shouldShowLocationAccessDialog, true);
             return false;
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
                 && ActivityCompat.checkSelfPermission(application, Manifest.permission.ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            updateAsSideEffect(shouldShowLocationAccessDialog, true);
             return false;
         }
         return isLocationServiceEnabled();
@@ -259,11 +257,8 @@ public class VenueDetailsViewModel extends BaseViewModel {
             return;
         }
         modelDisposable.add(checkInManager.enableAutomaticCheckOut()
+                .andThen(update(shouldEnableAutomaticCheckOut, true))
                 .andThen(startObservingAutomaticCheckOutErrors())
-                .andThen(Completable.mergeArray(
-                        update(shouldEnableAutomaticCheckOut, true),
-                        update(shouldShowLocationAccessDialog, false)
-                ))
                 .doOnError(throwable -> {
                     onEnablingAutomaticCheckOutFailed();
                     modelDisposable.add(handleAutomaticCheckOutError(throwable)
@@ -476,10 +471,6 @@ public class VenueDetailsViewModel extends BaseViewModel {
 
     public MutableLiveData<Boolean> getShouldEnableLocationServices() {
         return shouldEnableLocationServices;
-    }
-
-    public MutableLiveData<Boolean> getShouldShowLocationAccessDialog() {
-        return shouldShowLocationAccessDialog;
     }
 
     public static String getReadableDuration(long duration) {

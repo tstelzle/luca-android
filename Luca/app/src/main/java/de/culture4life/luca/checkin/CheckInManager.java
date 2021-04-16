@@ -55,6 +55,7 @@ import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Maybe;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import timber.log.Timber;
 
@@ -99,6 +100,9 @@ public class CheckInManager extends Manager {
 
     @Nullable
     private GeofencingRequest autoCheckoutGeofenceRequest;
+
+    @Nullable
+    private Disposable automaticCheckoutDisposable;
 
     public CheckInManager(@NonNull PreferencesManager preferencesManager, @NonNull NetworkManager networkManager, @NonNull GeofenceManager geofenceManager, @NonNull LocationManager locationManager, @NonNull HistoryManager historyManager, @NonNull CryptoManager cryptoManager, @NonNull LucaNotificationManager notificationManager) {
         this.preferencesManager = preferencesManager;
@@ -402,20 +406,33 @@ public class CheckInManager extends Manager {
 
     @RequiresPermission("android.permission.ACCESS_FINE_LOCATION")
     public Completable enableAutomaticCheckOut() {
-        return createAutoCheckoutGeofenceRequest()
-                .flatMapObservable(geofenceManager::getGeofenceEvents)
-                .firstElement()
-                .ignoreElement()
-                .andThen(performAutomaticCheckout()
-                        .doOnError(throwable -> Timber.w("Unable to perform automatic check-out: %s", throwable.toString()))
-                        .retryWhen(errors -> errors
-                                .doOnNext(throwable -> Timber.v("Retrying automatic check-out in %d seconds", TimeUnit.MILLISECONDS.toSeconds(AUTOMATIC_CHECK_OUT_RETRY_DELAY)))
-                                .delay(AUTOMATIC_CHECK_OUT_RETRY_DELAY, TimeUnit.MILLISECONDS, Schedulers.io())));
+        return Completable.fromAction(() -> {
+            if (automaticCheckoutDisposable != null && !automaticCheckoutDisposable.isDisposed()) {
+                automaticCheckoutDisposable.dispose();
+            }
+            automaticCheckoutDisposable = createAutoCheckoutGeofenceRequest()
+                    .flatMapObservable(geofenceManager::getGeofenceEvents)
+                    .firstElement()
+                    .ignoreElement()
+                    .andThen(performAutomaticCheckout()
+                            .doOnError(throwable -> Timber.w("Unable to perform automatic check-out: %s", throwable.toString()))
+                            .retryWhen(errors -> errors
+                                    .doOnNext(throwable -> Timber.v("Retrying automatic check-out in %d seconds", TimeUnit.MILLISECONDS.toSeconds(AUTOMATIC_CHECK_OUT_RETRY_DELAY)))
+                                    .delay(AUTOMATIC_CHECK_OUT_RETRY_DELAY, TimeUnit.MILLISECONDS, Schedulers.io())))
+                    .subscribeOn(Schedulers.io())
+                    .subscribe();
+            managerDisposable.add(automaticCheckoutDisposable);
+        });
     }
 
     public Completable disableAutomaticCheckOut() {
         return Maybe.fromCallable(() -> autoCheckoutGeofenceRequest)
                 .flatMapCompletable(geofenceManager::removeGeofences)
+                .andThen(Completable.fromAction(() -> {
+                    if (automaticCheckoutDisposable != null && !automaticCheckoutDisposable.isDisposed()) {
+                        automaticCheckoutDisposable.dispose();
+                    }
+                }))
                 .doOnComplete(() -> autoCheckoutGeofenceRequest = null);
     }
 

@@ -17,6 +17,7 @@
     <ImageView
             android:id="@+id/menuImageView"
             style="@style/MenuImageView"
+            android:contentDescription="@string/menu_more_content_description"
             app:tint="@android:color/black"
             tools:ignore="MissingConstraints" />
 
@@ -75,6 +76,7 @@
                     android:keepScreenOn="true"
                     android:scaleType="fitCenter"
                     android:padding="@dimen/spacing_default"
+                    android:contentDescription="@string/qr_code"
                     app:layout_constraintDimensionRatio="1:1"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -199,6 +201,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/spacing_default"
+            android:contentDescription="@string/meeting_slider_text"
             app:bump_vibration="50"
             app:complete_icon="@drawable/ic_sync"
             app:inner_color="@android:color/black"

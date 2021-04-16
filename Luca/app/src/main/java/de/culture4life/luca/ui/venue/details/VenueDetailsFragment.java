@@ -12,6 +12,7 @@ import android.provider.Settings;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.ncorti.slidetoact.SlideToActView;
 import com.tbruyelle.rxpermissions3.Permission;
@@ -20,6 +21,7 @@ import de.culture4life.luca.R;
 import de.culture4life.luca.ui.BaseFragment;
 import de.culture4life.luca.ui.ViewError;
 import de.culture4life.luca.ui.dialog.BaseDialogFragment;
+import de.culture4life.luca.util.AccessibilityServiceUtil;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -84,12 +86,7 @@ public class VenueDetailsFragment extends BaseFragment<VenueDetailsViewModel> {
 
         automaticCheckoutSwitch.setOnCheckedChangeListener((compoundButton, isChecked) -> {
             if (automaticCheckoutSwitch.isEnabled() && isChecked) {
-                Boolean shouldShowLocationAccessDialog = viewModel.getShouldShowLocationAccessDialog().getValue();
-                if (shouldShowLocationAccessDialog == null || shouldShowLocationAccessDialog) {
-                    showGrantLocationAccessDialog();
-                } else {
-                    viewModel.enableAutomaticCheckout();
-                }
+                showGrantLocationAccessDialog();
             } else {
                 viewModel.disableAutomaticCheckout();
             }
@@ -114,14 +111,24 @@ public class VenueDetailsFragment extends BaseFragment<VenueDetailsViewModel> {
     private void initializeSlideToActView() {
         slideToActView = getView().findViewById(R.id.slideToActView);
         slideToActView.setOnSlideCompleteListener(view -> viewModel.onSlideCompleted());
+        slideToActView.setOnSlideUserFailedListener((view, isOutside) -> {
+            if (AccessibilityServiceUtil.isGoogleTalkbackActive(getContext())) {
+                viewModel.onSlideCompleted();
+            } else {
+                Toast.makeText(getContext(), R.string.venue_slider_clicked, Toast.LENGTH_SHORT).show();
+            }
+        });
 
         observe(viewModel.getIsCheckedIn(), isCheckedIn -> {
             slideToActView.setReversed(isCheckedIn);
-            slideToActView.setText(getString(isCheckedIn ? R.string.venue_check_out_action : R.string.venue_check_in_action));
+            String buttonText = getString(isCheckedIn ? R.string.venue_check_out_action : R.string.venue_check_in_action);
+            slideToActView.setText(buttonText);
+            slideToActView.setContentDescription(buttonText);
             checkInDurationHeadingTextView.setVisibility(isCheckedIn ? View.VISIBLE : View.GONE);
             checkInDurationTextView.setVisibility(isCheckedIn ? View.VISIBLE : View.GONE);
             if (!isCheckedIn) {
                 navigationController.navigate(R.id.action_venueDetailFragment_to_qrCodeFragment);
+                AccessibilityServiceUtil.speak(getContext(), getString(R.string.venue_checked_out));
             }
         });
 

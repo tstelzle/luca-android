@@ -8,13 +8,16 @@ import de.culture4life.luca.LucaApplication;
 
 import net.lachlanmckee.timberjunit.TimberTestRule;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
+import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import androidx.annotation.NonNull;
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -110,6 +113,15 @@ public class CryptoManagerTest {
                 .map(bytes -> new String(bytes, StandardCharsets.UTF_8))
                 .test()
                 .assertResult("AOU\nÄÖÜ");
+    }
+
+    @Test
+    public void testGenerateRecentStartOfDayTimestamps() {
+        List<Long> test = cryptoManager.generateRecentStartOfDayTimestamps(14).toList().blockingGet();
+        for (int i = 0; i < test.size() - 1; i++) {
+            long diff = test.get(i) - test.get(i + 1);
+            Assert.assertEquals(diff, TimeUnit.DAYS.toMillis(1));
+        }
     }
 
     public static String encodeSecret(@NonNull byte[] secret) {

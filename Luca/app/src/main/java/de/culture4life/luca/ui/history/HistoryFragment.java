@@ -114,7 +114,7 @@ public class HistoryFragment extends BaseFragment<HistoryViewModel> {
     private void showShareHistoryConfirmationDialog() {
         new BaseDialogFragment(new MaterialAlertDialogBuilder(getContext())
                 .setTitle(getString(R.string.history_share_confirmation_title))
-                .setMessage(getString(R.string.history_share_confirmation_description))
+                .setMessage(R.string.history_share_confirmation_description)
                 .setPositiveButton(R.string.history_share_confirmation_action, (dialogInterface, i) -> viewModel.onShareHistoryRequested())
                 .setNegativeButton(R.string.action_cancel, (dialogInterface, i) -> dialogInterface.cancel()))
                 .show();

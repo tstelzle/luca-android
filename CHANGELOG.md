@@ -1,3 +1,13 @@
+# Release 1.6.6
+
+- Improved accessibility features
+- Clearer consent screens and disclosures
+- Miscellaneous bug fixes and improvements
+
+We integrated the TalkBack screen reader to help blind and visually impaired users interact with the luca app.
+
+Our consent dialogs have been updated to clarify under which conditions data is being processed. It is now indicated for which feature the data is required and which section of our privacy policy or the GDPR this relates to.
+
 # Release 1.6.0
 
 - Automatic check-out

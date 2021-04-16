@@ -8,6 +8,8 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.text.method.LinkMovementMethod;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -25,6 +27,13 @@ public class BaseDialogFragment extends DialogFragment {
 
     public BaseDialogFragment(MaterialAlertDialogBuilder builder) {
         this.builder = builder;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        TextView messageTextView = (TextView) getDialog().findViewById(android.R.id.message);
+        messageTextView.setMovementMethod(LinkMovementMethod.getInstance());
     }
 
     @Override

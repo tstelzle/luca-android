@@ -19,6 +19,7 @@ import de.culture4life.luca.location.GeofenceManager;
 import de.culture4life.luca.location.LocationManager;
 import de.culture4life.luca.meeting.MeetingManager;
 import de.culture4life.luca.network.NetworkManager;
+import de.culture4life.luca.network.endpoints.LucaEndpointsV3;
 import de.culture4life.luca.notification.LucaNotificationManager;
 import de.culture4life.luca.preference.PreferencesManager;
 import de.culture4life.luca.registration.RegistrationManager;
@@ -306,8 +307,8 @@ public class LucaApplication extends MultiDexApplication {
     }
 
     public Single<Boolean> isUpdateRequired() {
-        return networkManager.getLucaEndpoints()
-                .getSupportedVersionNumber()
+        return networkManager.getLucaEndpointsV3()
+                .flatMap(LucaEndpointsV3::getSupportedVersionNumber)
                 .map(jsonObject -> jsonObject.get("minimumVersion").getAsInt())
                 .doOnSuccess(versionNumber -> Timber.d("Minimum supported app version number: %d", versionNumber))
                 .map(minimumVersionNumber -> BuildConfig.VERSION_CODE < minimumVersionNumber);

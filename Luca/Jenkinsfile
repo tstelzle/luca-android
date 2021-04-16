@@ -1,0 +1,32 @@
+pipeline {
+    agent {
+        label('docker')
+    }
+
+    environment {
+        CONTAINER = 'mingc/android-build-box:1.20.0'
+    }
+
+    stages {
+        stage('Docker pull') {
+            steps {
+                sh("docker pull ${CONTAINER}")
+            }
+        }
+        stage('Unit Tests') {
+            steps {
+                sh("cd Luca && docker run --rm -v `pwd`:/Luca ${CONTAINER} bash -c 'cd /Luca; ./gradlew :app:test'")
+            }
+        }
+        stage('Build') {
+            steps {
+                sh("cd Luca && docker run --rm -v `pwd`:/Luca ${CONTAINER} bash -c 'cd /Luca; ./gradlew :app:assembleDebug'")
+            }
+        }
+        stage('Archive') {
+            steps {
+                archiveArtifacts artifacts: 'Luca/app/build/outputs/apk/**/*.apk', excludes: 'Luca/app/build/outputs/apk/**/*-androidTest.apk', fingerprint: true
+            }
+        }
+    }
+}

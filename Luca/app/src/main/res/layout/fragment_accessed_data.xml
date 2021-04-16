@@ -16,6 +16,7 @@
             android:id="@+id/menuImageView"
             android:visibility="gone"
             style="@style/MenuImageView"
+            android:contentDescription="@string/menu_more_content_description"
             tools:ignore="MissingConstraints" />
 
     <View

@@ -1,9 +1,12 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <!-- Global -->
     <string name="unknown">Unbekannt</string>
     <string name="feature_unavailable">Demnächst verfügbar</string>
     <string name="url_terms_and_conditions">https://luca-app.de/app-terms-and-conditions</string>
     <string name="url_privacy_policy">https://luca-app.de/app-privacy-policy</string>
     <string name="url_imprint">https://luca-app.de/imprint</string>
+    <string name="qr_code">QR Code</string>
+    <string name="qr_code_scanner">QR Code Scanner</string>
 
     <!-- Actions -->
     <string name="action_ok">@android:string/ok</string>
@@ -69,7 +72,9 @@
     <string name="welcome_heading">Hallo</string>
     <string name="welcome_description">luca hilft dir bei der sicheren und verschlüsselten Angabe deiner Kontaktdaten. Du musst dir keine Sorgen um deine Daten mehr machen, wenn du Veranstaltungen, Kulturstätten, Restaurants, Cafés oder Bars besuchst.</string>
     <string name="welcome_terms_description"><a href="https://luca-app.de/app-terms-and-conditions">AGB</a> zustimmen</string>
+    <string name="welcome_terms_checkbox_content_description">AGB</string>
     <string name="welcome_privacy_description"><a href="https://luca-app.de/app-privacy-policy">Datenschutzbestimmungen</a> zustimmen</string>
+    <string name="welcome_privacy_checkbox_content_description">Datenschutzerklärung</string>
     <string name="welcome_action">Los geht\'s!</string>
 
     <!-- Pre-Registration -->
@@ -79,6 +84,7 @@
     <!-- Permissions -->
     <string name="missing_permission_arg">Fehlende %1$s Berechtigung</string>
     <string name="permission_name_location">Standort</string>
+    <string name="permission_name_camera">Kamera</string>
 
     <!-- Registration -->
     <string name="registration_first_name">Vorname</string>
@@ -96,6 +102,13 @@
     <string name="registration_missing_fields_error_text">Bitte gib deinen Namen, deine Telefonnummer und deine Adresse an. </string>
     <string name="registration_invalid_value_field_error">Dieses Feld ist ungültig</string>
     <string name="registration_empty_but_required_field_error">Dieses Feld wird benötigt</string>
+    <string name="registration_missing_first_name_hint">Bitte gib deinen Vornamen ein, um fortzufahren.</string>
+    <string name="registration_missing_last_name_hint">Bitte gib deinen Nachnamen ein, um fortzufahren.</string>
+    <string name="registration_missing_phone_number_hint">Bitte gib deine Telefonnummer ein, um fortzufahren.</string>
+    <string name="registration_missing_street_hint">Bitte gib deine Straße ein, um fortzufahren.</string>
+    <string name="registration_missing_house_number_hint">Bitte gib deine Hausnummer ein, um fortzufahren.</string>
+    <string name="registration_missing_postal_code_hint">Bitte gib deine Postleitzahl ein, um fortzufahren.</string>
+    <string name="registration_missing_city_hint">Bitte gib deine Stadt ein, um fortzufahren.</string>
     <string name="registration_address_mandatory">Gastgeber müssen im Rahmen der Kontaktdatenerfassung deine Adresse aufnehmen. Deshalb ist die Angabe der Adresse für die Nutzung von luca verpflichtend.</string>
     <string name="registration_contact_info">Bitte gib eine korrekte Mobil- oder Festnetznummer an. Die Nummer wird für die Verifizierung verwendet. Du kannst selbst entscheiden, ob du zusätzlich eine E-Mail-Adresse angibst.</string>
     <string name="registration_address_info">Gastgeber:innen müssen im Rahmen der Kontaktdatenerfassung in der Regel auch deine Adresse aufnehmen. Deshalb ist die Angabe der Adresse für die Nutzung von luca verpflichtend.</string>
@@ -118,6 +131,7 @@
     <string name="navigation_accessed_data">Datenzugriffe</string>
 
     <!-- Menu -->
+    <string name="menu_more_content_description">Mehr Menu</string>
     <string name="menu_contact_data">Kontaktdaten</string>
     <string name="menu_clear_history">Historie löschen</string>
     <string name="menu_privacy_policy">Datenschutzbestimmungen</string>
@@ -127,8 +141,11 @@
 
     <!-- Contact Data -->
     <string name="qr_code_description">Das ist dein QR-Code. Lass ihn an einem luca-Standort scannen, um dich einzuchecken.</string>
+    <string name="scan_qr_code_description">Scanne den QR-Code eines luca-Standorts oder eines privaten Treffens, um dich einzuchecken.</string>
     <string name="scan_qr_code">Selbst einchecken</string>
-    <string name="show_qr_code">Einchecken lassen</string>
+    <string name="camera_access_title">Kamera aktivieren</string>
+    <string name="camera_access_description">Um selbst einchecken zu können braucht luca Zugriff auf deine Kamera, damit du QR-Codes von Locations oder Privaten Meetings scannen kannst. Nur die Daten im QR-Code werden verarbeitet und keine anderen Daten werden gespeichert.</string>
+    <string name="close_qr_code_scanner">QR-Code-Scanner schließen</string>
     <string name="edit_contact_data">Kontaktdaten bearbeiten</string>
 
     <!-- Private Meeting -->
@@ -146,6 +163,7 @@
     <string name="meeting_end_confirmation_description">Willst du dieses Treffen wirklich beenden?</string>
     <string name="meeting_end_action">Treffen beenden</string>
     <string name="meeting_slider_text">TREFFEN BEENDEN</string>
+    <string name="meeting_was_ended_hint">Das Treffen wurde beendet</string>
 
     <string name="meeting_join_heading">Privates Treffen</string>
     <string name="meeting_join_description">Wenn du dich bei einem privaten Treffen eincheckst, werden deinem Gastgeber dein Vor- und Nachname angezeigt.</string>
@@ -160,6 +178,8 @@
     <string name="venue_checked_in_time_format">dd.MM.yyyy HH:mm</string>
     <string name="venue_checked_in_time">Eingecheckt seit:\n<xliff:g example="18.08.2020 – 19:23" id="time">%1$s</xliff:g> Uhr</string>
     <string name="venue_automatic_check_out">Automatisch auschecken</string>
+    <string name="venue_slider_clicked">Bitte den Pfeil nach links ziehen</string>
+    <string name="venue_checked_out">Du hast ausgecheckt</string>
 
     <string name="venue_check_out_error">Auschecken fehlgeschlagen</string>
     <string name="venue_check_out_error_permission">Eine benötigte Berechtigung wurde nicht erteilt.</string>
@@ -171,7 +191,7 @@
     <string name="auto_checkout_info_title">Automatischer Check-out</string>
     <string name="auto_checkout_info_description">Wenn du diese Funktion aktivierst, wirst du automatisch ausgecheckt, sobald du den Standort verlässt, bei dem du gerade eingecheckt bist.\n\nDazu muss luca auf deinen Standort zugreifen können. Sobald du ausgecheckt wirst, die Standortdienste deaktivierst oder dein Handy neu startest, wird diese Funktion deaktiviert.</string>
     <string name="auto_checkout_location_access_title">Standortzugriff aktivieren</string>
-    <string name="auto_checkout_location_access_description">Für die Funktion des automatischen Check-outs muss luca auf deinen Standort zugreifen können solange du eingecheckt bist - auch dann, wenn die App geschlossen ist. Deine Standortdaten werden nicht gespeichert.</string>
+    <string name="auto_checkout_location_access_description">Die Funktion des automatischen Check-outs nutzt Geofencing. Wenn ein luca-Standort diese Funktion verwendet, kannst du durch die Nutzung der Standortdienste deines Handys automatisch auschecken, selbst wenn die App geschlossen ist. Dies erfolgt nur aufgrund deiner Einwilligung gem. Art. 6 (1) 1 a) DSGVO (mehr: <a href="https://www.luca-app.de/app-privacy-policy/">Datenschutz - App</a>. Natürlich kannst du dich auch jederzeit manuell auschecken.</string>
     <string name="auto_checkout_background_location_access_title">@string/auto_checkout_location_access_title</string>
     <string name="auto_checkout_background_location_access_description">Für die Funktion des automatischen Check-outs muss luca auf deinen Standort zugreifen können solange du eingecheckt bist, selbst wenn die App geschlossen ist. Aktiviere dafür bitte die folgende Option: <xliff:g example="Allow all the time" id="locationPermissionOption">%1$s</xliff:g></string>
     <string name="auto_checkout_enable_location_title">Standortdienste aktivieren</string>
@@ -188,7 +208,7 @@
     <string name="history_time"><xliff:g example="18.08.2020 – 19:23" id="time">%1$s</xliff:g> Uhr</string>
     <string name="history_share">Daten freigeben</string>
     <string name="history_share_confirmation_title">@string/history_share</string>
-    <string name="history_share_confirmation_description">Möchtest du deine Historie der letzten 14&#160;Tage und deine Kontaktdaten für das Gesundheitsamt freigeben?</string>
+    <string name="history_share_confirmation_description">Möchtest du deine Historie der letzten 14&#160;Tage und deine Kontaktdaten für das Gesundheitsamt freigeben? Dies erfolgt nur aufgrund deiner freiwilligen Einwilligung gem. Art. 9 (2) a) DSGVO (mehr: <a href="https://www.luca-app.de/app-privacy-policy/">Datenschutz - App</a>).</string>
     <string name="history_share_confirmation_action">Freigeben</string>
     <string name="history_share_tan_title">@string/history_share</string>
     <string name="history_share_tan_description">Bitte gib die folgende TAN an, sobald du vom Gesundheitsamt darum gebeten wirst:\n\n<xliff:g example="VU5S-86V6-H8FV" id="tan">%1$s</xliff:g></string>
@@ -219,7 +239,7 @@
     <string name="accessed_data_title"><xliff:g example="Health department Berlin Mitte" id="healthDepartmentName">%1$s</xliff:g></string>
     <string name="accessed_data_description"><xliff:g example="neXenio Office" id="locationName">%1$s</xliff:g></string>
     <string name="accessed_data_dialog_title">Neue Datenanfrage</string>
-    <string name="accessed_data_dialog_description">Ein Gesundheitsamt hat im Rahmen einer Datenanfrage Zugriff auf deine Kontaktdaten erhalten.\n\nIm Rahmen einer Kontaktnachverfolgung wurden deine Kontaktdaten von einem Gesundheitsamt entschlüsselt. Das Gesundheitsamt wertet gerade aus, ob ein Risiko besteht und wird sich möglicherweise bei dir melden. Bis dahin besteht kein Handlungsbedarf.\n\nBitte handle verantwortungsvoll.</string>
+    <string name="accessed_data_dialog_description">Ein oder mehrere Gesundheitsämter haben im Rahmen einer Datenanfrage deine Kontaktdaten erhalten.\n\nIm Rahmen einer Kontaktnachverfolgung wurden deine Kontaktdaten von einem oder mehreren Gesundheitsämtern entschlüsselt. Diese werten gerade aus, ob ein Risiko besteht und werden sich möglicherweise bei dir melden. Bis dahin besteht kein Handlungsbedarf.\n\nBitte handle verantwortungsvoll.</string>
     <string name="accessed_data_dialog_action_show">Alle Datenzugriffe</string>
     <string name="accessed_data_dialog_action_dismiss">@string/action_ok</string>
 

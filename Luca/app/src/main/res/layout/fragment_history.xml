@@ -17,6 +17,7 @@
     <ImageView
             android:id="@+id/accessedDataImageView"
             style="@style/MenuImageView"
+            android:contentDescription="@string/menu_more_content_description"
             android:src="@drawable/ic_eye"
             app:layout_constraintEnd_toEndOf="@null"
             app:layout_constraintEnd_toStartOf="@id/menuImageView"
@@ -25,6 +26,7 @@
     <ImageView
             android:id="@+id/menuImageView"
             style="@style/MenuImageView"
+            android:contentDescription="@string/menu_more_content_description"
             tools:ignore="MissingConstraints" />
 
     <View

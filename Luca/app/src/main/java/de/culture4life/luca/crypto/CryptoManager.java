@@ -167,10 +167,10 @@ public class CryptoManager extends Manager {
     }
 
     /**
-     * In app versions before 1.4.8, the daily key pair public key was named "backend master key". To
-     * avoid the impression that there would be an all mighty "master key", it has been renamed. In
-     * app versions before 1.6.1, the daily key pair public key was named "rotating backend public
-     * key". To match with the security concept of luca, it has been renamed.
+     * In app versions before 1.4.8, the daily key pair public key was named "backend master key".
+     * To avoid the impression that there would be an all mighty "master key", it has been renamed.
+     * In app versions before 1.6.1, the daily key pair public key was named "rotating backend
+     * public key". To match with the security concept of luca, it has been renamed.
      */
     private Completable migrateDailyKeyPairPublicKey() {
         Maybe<Integer> restoreId = preferencesManager.restoreIfAvailable(OLD_ROTATING_BACKEND_PUBLIC_KEY_ID_KEY, Integer.class);
@@ -528,10 +528,10 @@ public class CryptoManager extends Manager {
                         .map(secret -> new Pair<>(startOfDayTimestamp, secret)));
     }
 
-    private Observable<Long> generateRecentStartOfDayTimestamps(int days) {
+    public Observable<Long> generateRecentStartOfDayTimestamps(int days) {
         return TimeUtil.getStartOfDayTimestamp()
                 .flatMapObservable(firstStartOfDayTimestamp -> Observable.range(0, days)
-                        .map(dayIndex -> firstStartOfDayTimestamp - (dayIndex * TimeUnit.DAYS.toMillis(dayIndex))));
+                        .map(dayIndex -> firstStartOfDayTimestamp - TimeUnit.DAYS.toMillis(dayIndex)));
     }
 
     /**

@@ -73,6 +73,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
+            android:contentDescription="@string/welcome_terms_checkbox_content_description"
             app:layout_constraintBottom_toTopOf="@id/privacyCheckBox"
             app:layout_constraintStart_toStartOf="parent" />
 
@@ -94,6 +95,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/spacing_large"
+            android:contentDescription="@string/welcome_privacy_checkbox_content_description"
             app:layout_constraintBottom_toTopOf="@id/primaryActionButton"
             app:layout_constraintStart_toStartOf="parent" />
 

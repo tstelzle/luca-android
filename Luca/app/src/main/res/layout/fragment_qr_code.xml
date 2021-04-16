@@ -15,6 +15,7 @@
     <ImageView
             android:id="@+id/menuImageView"
             style="@style/MenuImageView"
+            android:contentDescription="@string/menu_more_content_description"
             tools:ignore="MissingConstraints" />
 
     <View
@@ -57,6 +58,7 @@
                     android:keepScreenOn="true"
                     android:scaleType="fitCenter"
                     android:padding="@dimen/spacing_default"
+                    android:contentDescription="@string/qr_code"
                     app:layout_constraintDimensionRatio="1:1"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -68,6 +70,7 @@
                     android:keepScreenOn="true"
                     android:scaleType="fitCenter"
                     android:visibility="gone"
+                    android:contentDescription="@string/qr_code_scanner"
                     app:layout_constraintDimensionRatio="1:1"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />

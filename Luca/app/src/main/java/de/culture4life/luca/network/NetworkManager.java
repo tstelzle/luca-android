@@ -20,6 +20,7 @@ import io.reactivex.rxjava3.core.Maybe;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import okhttp3.CertificatePinner;
+import okhttp3.Credentials;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
@@ -39,7 +40,6 @@ public class NetworkManager extends Manager {
 
     private Gson gson;
     private Retrofit retrofit;
-    private OkHttpClient okHttpClient;
     private LucaEndpointsV3 lucaEndpointsV3;
     private ConnectivityManager connectivityManager;
 
@@ -61,30 +61,7 @@ public class NetworkManager extends Manager {
                     .setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
                     .create();
 
-            Interceptor userAgentInterceptor = chain -> chain.proceed(chain.request()
-                    .newBuilder()
-                    .header("User-Agent", USER_AGENT)
-                    .build());
-
-            CertificatePinner certificatePinner = new CertificatePinner.Builder()
-                    .add("**.luca-app.de", "sha256/wjD2X9ht0iXPN2sSXiXd2aF6ar5cxHOmXZnnkAiwVpU=") // CN=*.luca-app.de,O=neXenio GmbH,L=Berlin,ST=Berlin,C=DE,2.5.4.5=#130c43534d303233353532353339
-                    .build();
-
-            OkHttpClient.Builder builder = new OkHttpClient.Builder()
-                    .callTimeout(10, TimeUnit.SECONDS)
-                    .connectTimeout(10, TimeUnit.SECONDS)
-                    .readTimeout(10, TimeUnit.SECONDS)
-                    .writeTimeout(10, TimeUnit.SECONDS)
-                    .addInterceptor(userAgentInterceptor)
-                    .certificatePinner(certificatePinner);
-
-            if (BuildConfig.DEBUG) {
-                HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
-                loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-                builder.addInterceptor(loggingInterceptor);
-            }
-
-            okHttpClient = builder.build();
+            OkHttpClient okHttpClient = createOkHttpClient();
 
             retrofit = new Retrofit.Builder()
                     .baseUrl(API_BASE_URL)
@@ -95,6 +72,40 @@ public class NetworkManager extends Manager {
 
             lucaEndpointsV3 = retrofit.create(LucaEndpointsV3.class);
         });
+    }
+
+    @NonNull
+    private OkHttpClient createOkHttpClient() {
+        Interceptor userAgentInterceptor = chain -> chain.proceed(chain.request()
+                .newBuilder()
+                .header("User-Agent", USER_AGENT)
+                .build());
+
+        CertificatePinner certificatePinner = new CertificatePinner.Builder()
+                .add("**.luca-app.de", "sha256/wjD2X9ht0iXPN2sSXiXd2aF6ar5cxHOmXZnnkAiwVpU=") // CN=*.luca-app.de,O=neXenio GmbH,L=Berlin,ST=Berlin,C=DE,2.5.4.5=#130c43534d303233353532353339
+                .build();
+
+        OkHttpClient.Builder builder = new OkHttpClient.Builder()
+                .callTimeout(10, TimeUnit.SECONDS)
+                .connectTimeout(10, TimeUnit.SECONDS)
+                .readTimeout(10, TimeUnit.SECONDS)
+                .writeTimeout(10, TimeUnit.SECONDS)
+                .addInterceptor(userAgentInterceptor)
+                .certificatePinner(certificatePinner);
+
+        if (BuildConfig.DEBUG) {
+            HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
+            loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+            builder.addInterceptor(loggingInterceptor);
+            builder.authenticator((route, response) -> {
+                String credential = Credentials.basic(BuildConfig.STAGING_API_USERNAME, BuildConfig.STAGING_API_PASSWORD);
+                return response.request().newBuilder()
+                        .header("Authorization", credential)
+                        .build();
+            });
+        }
+
+        return builder.build();
     }
 
     @Deprecated

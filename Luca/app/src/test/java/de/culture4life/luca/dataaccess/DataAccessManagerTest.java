@@ -4,6 +4,7 @@ import de.culture4life.luca.LucaUnitTest;
 import de.culture4life.luca.checkin.CheckInManager;
 import de.culture4life.luca.crypto.CryptoManager;
 import de.culture4life.luca.history.HistoryManager;
+import de.culture4life.luca.location.GeofenceManager;
 import de.culture4life.luca.location.LocationManager;
 import de.culture4life.luca.network.NetworkManager;
 import de.culture4life.luca.network.pojo.AccessedHashedTraceIdsData;
@@ -11,6 +12,7 @@ import de.culture4life.luca.network.pojo.HealthDepartment;
 import de.culture4life.luca.notification.LucaNotificationManager;
 import de.culture4life.luca.preference.PreferencesManager;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,14 +36,15 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-@Config(sdk = 28)
 @RunWith(AndroidJUnit4.class)
+@Config(sdk = 28)
 public class DataAccessManagerTest extends LucaUnitTest {
 
     PreferencesManager preferencesManager;
     LucaNotificationManager notificationManager;
     LocationManager locationManager;
     NetworkManager networkManager;
+    GeofenceManager geofenceManager;
     HistoryManager historyManager;
     CryptoManager cryptoManager;
     CheckInManager checkInManager;
@@ -53,9 +56,10 @@ public class DataAccessManagerTest extends LucaUnitTest {
         notificationManager = spy(new LucaNotificationManager());
         locationManager = spy(new LocationManager());
         networkManager = spy(new NetworkManager());
+        geofenceManager = spy(new GeofenceManager());
         historyManager = spy(new HistoryManager(preferencesManager));
         cryptoManager = spy(new CryptoManager(preferencesManager, networkManager));
-        checkInManager = spy(new CheckInManager(preferencesManager, networkManager, locationManager, historyManager, cryptoManager));
+        checkInManager = spy(new CheckInManager(preferencesManager, networkManager, geofenceManager, locationManager, historyManager, cryptoManager, notificationManager));
 
         dataAccessManager = spy(new DataAccessManager(preferencesManager, networkManager, notificationManager, checkInManager, historyManager, cryptoManager));
         dataAccessManager.initialize(application).blockingAwait();
@@ -83,10 +87,10 @@ public class DataAccessManagerTest extends LucaUnitTest {
 
         long previousDuration = dataAccessManager.getDurationSinceLastUpdate().blockingGet();
 
-        dataAccessManager.update().onErrorComplete()
+        Long duration = dataAccessManager.update().onErrorComplete()
                 .andThen(dataAccessManager.getDurationSinceLastUpdate())
-                .test()
-                .assertValue(previousDuration);
+                .blockingGet();
+        Assert.assertEquals(duration, previousDuration, 20);
     }
 
     @Test
@@ -127,7 +131,7 @@ public class DataAccessManagerTest extends LucaUnitTest {
 
         dataAccessManager.getNextRecommendedUpdateDelay()
                 .test()
-                .assertValue(DataAccessManager.UPDATE_INITIAL_DELAY);
+                .assertValue(0l);
     }
 
     @Test

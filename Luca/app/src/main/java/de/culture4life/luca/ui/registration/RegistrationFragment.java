@@ -22,11 +22,13 @@ import de.culture4life.luca.network.NetworkManager;
 import de.culture4life.luca.ui.BaseFragment;
 import de.culture4life.luca.ui.DefaultTextWatcher;
 import de.culture4life.luca.ui.dialog.BaseDialogFragment;
+import de.culture4life.luca.util.AccessibilityServiceUtil;
 import de.culture4life.luca.util.TimeUtil;
 
 import java.net.HttpURLConnection;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -59,6 +61,18 @@ public class RegistrationFragment extends BaseFragment<RegistrationViewModel> {
     private RegistrationTextInputLayout postalCodeLayout;
     private RegistrationTextInputLayout cityNameLayout;
     private MaterialButton confirmationButton;
+
+    private static HashMap<Integer, Integer> inputTextIdToHint = new HashMap<>();
+
+    static {
+        inputTextIdToHint.put(R.id.firstNameLayout, R.string.registration_missing_first_name_hint);
+        inputTextIdToHint.put(R.id.lastNameLayout, R.string.registration_missing_last_name_hint);
+        inputTextIdToHint.put(R.id.phoneNumberLayout, R.string.registration_missing_phone_number_hint);
+        inputTextIdToHint.put(R.id.streetLayout, R.string.registration_missing_street_hint);
+        inputTextIdToHint.put(R.id.houseNumberLayout, R.string.registration_missing_house_number_hint);
+        inputTextIdToHint.put(R.id.postalCodeLayout, R.string.registration_missing_postal_code_hint);
+        inputTextIdToHint.put(R.id.cityNameLayout, R.string.registration_missing_city_hint);
+    }
 
     private Observer<Boolean> completionObserver;
 
@@ -495,12 +509,19 @@ public class RegistrationFragment extends BaseFragment<RegistrationViewModel> {
                 textLayout.requestFocus();
             }
             if (textLayout.isEmptyButRequired()) {
+                talkbackHintFor(textLayout);
                 textLayout.setError(getString(R.string.registration_empty_but_required_field_error));
             } else if (!textLayout.isValid()) {
                 textLayout.setError(getString(R.string.registration_invalid_value_field_error));
             }
         }
         return completed;
+    }
+
+    private void talkbackHintFor(RegistrationTextInputLayout textLayout) {
+        if (inputTextIdToHint.containsKey(textLayout.getId())) {
+            AccessibilityServiceUtil.speak(getContext(), getString(inputTextIdToHint.get(textLayout.getId())));
+        }
     }
 
     private boolean shouldSkipVerification() {
