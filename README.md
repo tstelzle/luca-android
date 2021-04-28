@@ -2,7 +2,13 @@
 
 [luca](https://luca-app.de) ensures a data protection-compliant, decentralized encryption of your data, undertakes the obligation to record contact data for events and gastronomy, relieves the health authorities through digital, lean, and integrated processes to enable efficient and complete tracing.
 
-This repository contains the source code of the luca app for Android. Note that the version that you get from the [Google Play Store](https://play.google.com/store/apps/details?id=de.culture4life.luca) may not always match with the `master` branch of this repository, e.g. because of a staged rollout or a [public beta](https://play.google.com/apps/testing/de.culture4life.luca) release.
+This repository contains the source code of the luca app for Android. Note that the version that you get from the Google Play Store may not always match with the `master` branch of this repository, e.g. because of a staged rollout or a [public beta](https://play.google.com/apps/testing/de.culture4life.luca) release.
+
+## Installation
+
+- [Google Play Store](https://play.google.com/store/apps/details?id=de.culture4life.luca)
+- [F-Droid](https://gitlab.com/lucaapp/fdroid-repository)
+- [APK from GitLab Releases](https://gitlab.com/lucaapp/android/-/releases)
 
 ## Changelog
 
