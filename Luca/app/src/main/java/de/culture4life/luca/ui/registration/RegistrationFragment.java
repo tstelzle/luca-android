@@ -9,6 +9,7 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil;
 
 import android.animation.ObjectAnimator;
 import android.text.Editable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -61,6 +62,7 @@ public class RegistrationFragment extends BaseFragment<RegistrationViewModel> {
     private RegistrationTextInputLayout postalCodeLayout;
     private RegistrationTextInputLayout cityNameLayout;
     private MaterialButton confirmationButton;
+    private MaterialButton fakeCheckinButton;
 
     private static HashMap<Integer, Integer> inputTextIdToHint = new HashMap<>();
 
@@ -109,6 +111,7 @@ public class RegistrationFragment extends BaseFragment<RegistrationViewModel> {
 
         headingTextView = getView().findViewById(R.id.registrationHeading);
         confirmationButton = getView().findViewById(R.id.registrationActionButton);
+        fakeCheckinButton = getView().findViewById(R.id.fakeCheckinButton);
 
         if (viewModel.isInEditMode()) {
             initializeSharedViewsInEditMode();
@@ -146,6 +149,12 @@ public class RegistrationFragment extends BaseFragment<RegistrationViewModel> {
                         showContactStep();
                     }
                 }).delaySubscription(DELAY_DURATION, TimeUnit.MILLISECONDS, AndroidSchedulers.mainThread())
+                .subscribe()));
+
+        fakeCheckinButton.setOnClickListener(v -> viewDisposable.add(Completable.fromAction(
+                () -> {
+                    Log.d("", "fake checkin");
+                })
                 .subscribe()));
     }
 
