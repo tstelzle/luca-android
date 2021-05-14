@@ -219,7 +219,7 @@ public class QrCodeViewModel extends BaseViewModel implements ImageAnalysis.Anal
                         .doFinally(() -> updateAsSideEffect(isLoading, false)));
     }
 
-    private Single<QrCodeData> generateQrCodeData() {
+    public Single<QrCodeData> generateQrCodeData() {
         return Single.just(new QrCodeData())
                 .flatMap(qrCodeData -> cryptoManager.getTraceIdWrapper(userId)
                         .flatMapCompletable(userTraceIdWrapper -> Completable.mergeArray(
@@ -378,7 +378,7 @@ public class QrCodeViewModel extends BaseViewModel implements ImageAnalysis.Anal
                 ));
     }
 
-    private Completable handleDeepLink(@NonNull String url) {
+    public Completable handleDeepLink(@NonNull String url) {
         return Completable.defer(() -> {
             if (url.contains("/meeting")) {
                 return handleMeetingCheckInDeepLink(url);

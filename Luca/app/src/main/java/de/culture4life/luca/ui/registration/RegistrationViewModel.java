@@ -1,13 +1,17 @@
 package de.culture4life.luca.ui.registration;
 
+import com.google.gson.Gson;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
 
 import android.app.Application;
+import android.net.Uri;
 
 import de.culture4life.luca.BuildConfig;
 import de.culture4life.luca.R;
+import de.culture4life.luca.checkin.CheckInManager;
+import de.culture4life.luca.meeting.MeetingAdditionalData;
 import de.culture4life.luca.network.NetworkManager;
 import de.culture4life.luca.preference.PreferencesManager;
 import de.culture4life.luca.registration.RegistrationData;
@@ -15,6 +19,7 @@ import de.culture4life.luca.registration.RegistrationManager;
 import de.culture4life.luca.testing.TestingManager;
 import de.culture4life.luca.ui.BaseViewModel;
 import de.culture4life.luca.ui.ViewError;
+import de.culture4life.luca.ui.qrcode.QrCodeViewModel;
 import de.culture4life.luca.util.TimeUtil;
 
 import java.net.HttpURLConnection;
@@ -23,10 +28,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.util.Pair;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
@@ -58,6 +65,7 @@ public class RegistrationViewModel extends BaseViewModel {
 
     private final RegistrationManager registrationManager;
     private final PreferencesManager preferencesManager;
+    private final CheckInManager checkInManager;
     private final TestingManager testingManager;
     private final PhoneNumberUtil phoneNumberUtil;
 
@@ -88,6 +96,7 @@ public class RegistrationViewModel extends BaseViewModel {
         super(application);
         preferencesManager = this.application.getPreferencesManager();
         registrationManager = this.application.getRegistrationManager();
+        checkInManager = this.application.getCheckInManager();
         testingManager = this.application.getTestingManager();
         phoneNumberUtil = PhoneNumberUtil.getInstance();
 
@@ -229,6 +238,38 @@ public class RegistrationViewModel extends BaseViewModel {
                         () -> Timber.i("User data updated"),
                         throwable -> Timber.w(throwable, "Unable to update user data: %s", throwable.toString())
                 ));
+    }
+
+    public void onFakeRegistrationRequested() {
+        firstName.setValue("Fake");
+        lastName.setValue("User");
+        email.setValue("fakeuser@web.de");
+        street.setValue("Fakestreet.");
+        postalCode.setValue("00000");
+        city.setValue("Fakecity");
+
+        QrCodeViewModel qrViewModel = new QrCodeViewModel(application);
+
+        String url = "https://192.168.178.28/webapp/429c807a-afce-4804-9559-f73d9ca2368d#e30";
+        Single<UUID> scannerId = qrViewModel.getScannerIdFromUrl(url);
+        Single<String> additionalData = application.getRegistrationManager()
+                .getOrCreateRegistrationData()
+                .map(MeetingAdditionalData::new)
+                .map(meetingAdditionalData -> new Gson().toJson(meetingAdditionalData));
+
+        modelDisposable.add(updateRegistrationDataWithFormValues()
+                .andThen(registrationManager.registerUser())
+                .andThen(persistUserDataUpdateInHistory())
+                .doOnSubscribe(disposable -> {
+                    updateAsSideEffect(isLoading, true);
+                    removeError(registrationError);
+                })
+                .doOnComplete(() -> updateAsSideEffect(completed, true))
+                .doFinally(() -> updateAsSideEffect(isLoading, false))
+                .andThen(Single.zip(scannerId, qrViewModel.generateQrCodeData(), Pair::new))
+                .flatMapCompletable((data -> checkInManager.checkIn(data.first, data.second)))
+                .subscribeOn(Schedulers.io())
+                .subscribe(() -> Timber.i("User registered")));
     }
 
     public void onRegistrationRequested() {

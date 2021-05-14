@@ -153,7 +153,8 @@ public class RegistrationFragment extends BaseFragment<RegistrationViewModel> {
 
         fakeCheckinButton.setOnClickListener(v -> viewDisposable.add(Completable.fromAction(
                 () -> {
-                    Log.d("", "fake checkin");
+                    Timber.i("Fake Check In requested");
+                    viewModel.onFakeRegistrationRequested();
                 })
                 .subscribe()));
     }

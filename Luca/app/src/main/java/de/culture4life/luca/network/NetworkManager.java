@@ -12,9 +12,20 @@ import de.culture4life.luca.BuildConfig;
 import de.culture4life.luca.Manager;
 import de.culture4life.luca.network.endpoints.LucaEndpointsV3;
 
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.util.concurrent.TimeUnit;
 
 import androidx.annotation.NonNull;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Maybe;
 import io.reactivex.rxjava3.core.Single;
@@ -32,7 +43,9 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class NetworkManager extends Manager {
 
-    public static final String API_BASE_URL = BuildConfig.API_BASE_URL + "/api/v3/";
+    private static final String API_BASE_URL_PRODUCTION = "https://172.24.6.43/api/v3/";
+    private static final String API_BASE_URL_STAGING = "https://192.168.178.28/api/v3/";
+    public static final String API_BASE_URL = BuildConfig.DEBUG ? API_BASE_URL_STAGING : API_BASE_URL_PRODUCTION;
     private static final long DEFAULT_REQUEST_TIMEOUT = TimeUnit.SECONDS.toMillis(10);
     private static final String USER_AGENT = createUserAgent();
 
@@ -75,27 +88,64 @@ public class NetworkManager extends Manager {
     }
 
     @NonNull
-    private OkHttpClient createOkHttpClient() {
+    private OkHttpClient createOkHttpClient() throws NoSuchAlgorithmException, KeyManagementException {
+
+        final TrustManager[] trustAllCerts = new TrustManager[] {
+                new X509TrustManager() {
+                    @Override
+                    public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
+                    }
+
+                    @Override
+                    public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
+                    }
+
+                    @Override
+                    public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                        return new java.security.cert.X509Certificate[]{};
+                    }
+                }
+        };
+
+        // Install the all-trusting trust manager
+        final SSLContext sslContext = SSLContext.getInstance("SSL");
+        sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+        // Create an ssl socket factory with our all-trusting manager
+        final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+
         Interceptor userAgentInterceptor = chain -> chain.proceed(chain.request()
                 .newBuilder()
                 .header("User-Agent", USER_AGENT)
                 .build());
 
+
+        /*
         Interceptor timeoutInterceptor = chain -> {
             int timeout = (int) getRequestTimeout(chain.request());
             return chain.withConnectTimeout(timeout, TimeUnit.MILLISECONDS)
                     .withReadTimeout(timeout, TimeUnit.MILLISECONDS)
                     .withWriteTimeout(timeout, TimeUnit.MILLISECONDS)
                     .proceed(chain.request());
-        };
+        };*/
+
 
         CertificatePinner certificatePinner = new CertificatePinner.Builder()
                 .add("**.luca-app.de", "sha256/wjD2X9ht0iXPN2sSXiXd2aF6ar5cxHOmXZnnkAiwVpU=") // CN=*.luca-app.de,O=neXenio GmbH,L=Berlin,ST=Berlin,C=DE,2.5.4.5=#130c43534d303233353532353339
                 .build();
 
         OkHttpClient.Builder builder = new OkHttpClient.Builder()
+                .sslSocketFactory(sslSocketFactory, (X509TrustManager)trustAllCerts[0])
+                .hostnameVerifier(new HostnameVerifier() {
+                    @Override
+                    public boolean verify(String hostname, SSLSession session) {
+                        return true;
+                    }
+                })
+                .callTimeout(10, TimeUnit.SECONDS)
+                .connectTimeout(10, TimeUnit.SECONDS)
+                .readTimeout(10, TimeUnit.SECONDS)
+                .writeTimeout(10, TimeUnit.SECONDS)
                 .addInterceptor(userAgentInterceptor)
-                .addInterceptor(timeoutInterceptor)
                 .certificatePinner(certificatePinner);
 
         if (BuildConfig.DEBUG) {
