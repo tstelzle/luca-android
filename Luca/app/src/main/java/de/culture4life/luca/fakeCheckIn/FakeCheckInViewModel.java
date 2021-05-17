@@ -31,10 +31,7 @@ public class FakeCheckInViewModel extends BaseViewModel {
     }
 
 
-    public void onFakeRegistrationRequested() {
-
-        String url = "https://192.168.178.28/webapp/429c807a-afce-4804-9559-f73d9ca2368d#e30";
-
+    public void onFakeRegistrationRequested(int number, String url) {
         CheckInRequestData data = new CheckInRequestData();
         data.setDeviceType(0);
 

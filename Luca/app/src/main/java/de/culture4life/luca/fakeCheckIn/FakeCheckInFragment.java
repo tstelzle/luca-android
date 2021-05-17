@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.textfield.TextInputEditText;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -20,6 +21,8 @@ import timber.log.Timber;
 
 public class FakeCheckInFragment extends BaseFragment<FakeCheckInViewModel> {
 
+    private TextInputEditText textAmount;
+    private TextInputEditText textURL;
     private MaterialButton checkInButton;
 
     @NonNull
@@ -38,11 +41,13 @@ public class FakeCheckInFragment extends BaseFragment<FakeCheckInViewModel> {
 
     private void initializeSharedViews() {
         checkInButton = getView().findViewById(R.id.primaryActionButton);
+        textAmount = getView().findViewById(R.id.textAmount);
+        textURL = getView().findViewById(R.id.textURL);
 
         checkInButton.setOnClickListener(v -> viewDisposable.add(Completable.fromAction(
                 () -> {
                     Timber.i("Fake Check In clicked");
-                    viewModel.onFakeRegistrationRequested();
+                    viewModel.onFakeRegistrationRequested(Integer.parseInt(textAmount.getText().toString()), textURL.getText().toString());
                 })
                 .subscribe()));
     }
