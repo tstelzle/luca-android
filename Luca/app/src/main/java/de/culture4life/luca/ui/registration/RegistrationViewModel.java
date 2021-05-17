@@ -293,47 +293,6 @@ public class RegistrationViewModel extends BaseViewModel {
         return sb.toString();
     }
 
-    protected byte[] generateRandomBytes(int len, String pers) {
-        final String hashingAlgo = "HmacSHA256";
-        final int hashingBytes = 32;
-        try {
-            int count = 0;
-            byte[] init = hmac(hashingAlgo, pers.getBytes(), intToBytesBE(count));
-            byte[] result = new byte[]{};
-            for (count = 1; count <= (len / 4) + 1; count++) {
-                byte[] newResult = hmac(hashingAlgo, init, intToBytesBE(count));
-                byte[] oldResult = result;
-                result = new byte[oldResult.length + newResult.length];
-                System.arraycopy(oldResult, 0, result, 0, oldResult.length);
-                System.arraycopy(newResult, 0, result, oldResult.length, newResult.length);
-            }
-            return Arrays.copyOfRange(result, 0, len);
-        }
-        catch (NoSuchAlgorithmException | InvalidKeyException e) {
-            // in case of emergency return all zeros
-            byte[] result = new byte[len];
-            for(int i = 0; i < len; i++){
-                result[i] = 0;
-            }
-            return result;
-        }
-    }
-
-    public static byte[] hmac(String algorithm, byte[] key, byte[] message) throws NoSuchAlgorithmException, InvalidKeyException {
-        Mac mac = Mac.getInstance(algorithm);
-        mac.init(new SecretKeySpec(key, algorithm));
-        return mac.doFinal(message);
-    }
-
-    private static byte[] intToBytesBE(final int data) {
-        return new byte[] {
-                (byte)((data >> 24) & 0xff),
-                (byte)((data >> 16) & 0xff),
-                (byte)((data >> 8) & 0xff),
-                (byte)((data >> 0) & 0xff),
-        };
-    }
-
     public void onRegistrationRequested() {
         modelDisposable.add(updateRegistrationDataWithFormValues()
                 .andThen(registrationManager.registerUser())
