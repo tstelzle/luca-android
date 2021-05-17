@@ -11,8 +11,10 @@ import android.net.Uri;
 import de.culture4life.luca.BuildConfig;
 import de.culture4life.luca.R;
 import de.culture4life.luca.checkin.CheckInManager;
+import de.culture4life.luca.crypto.AsymmetricCipherProvider;
 import de.culture4life.luca.meeting.MeetingAdditionalData;
 import de.culture4life.luca.network.NetworkManager;
+import de.culture4life.luca.network.pojo.CheckInRequestData;
 import de.culture4life.luca.preference.PreferencesManager;
 import de.culture4life.luca.registration.RegistrationData;
 import de.culture4life.luca.registration.RegistrationManager;
@@ -20,9 +22,12 @@ import de.culture4life.luca.testing.TestingManager;
 import de.culture4life.luca.ui.BaseViewModel;
 import de.culture4life.luca.ui.ViewError;
 import de.culture4life.luca.ui.qrcode.QrCodeViewModel;
+import de.culture4life.luca.util.SerializationUtil;
 import de.culture4life.luca.util.TimeUtil;
 
 import java.net.HttpURLConnection;
+import java.security.KeyPair;
+import java.security.interfaces.ECPublicKey;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -45,8 +50,10 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import timber.log.Timber;
 
+import static de.culture4life.luca.crypto.HashProvider.TRIMMED_HASH_LENGTH;
 import static de.culture4life.luca.registration.RegistrationManager.REGISTRATION_COMPLETED_KEY;
 import static de.culture4life.luca.registration.RegistrationManager.REGISTRATION_DATA_KEY;
+import static de.culture4life.luca.util.SerializationUtil.serializeToBase64;
 import static java.net.HttpURLConnection.HTTP_BAD_GATEWAY;
 
 public class RegistrationViewModel extends BaseViewModel {
@@ -65,6 +72,7 @@ public class RegistrationViewModel extends BaseViewModel {
 
     private final RegistrationManager registrationManager;
     private final PreferencesManager preferencesManager;
+    private final NetworkManager networkManager;
     private final CheckInManager checkInManager;
     private final TestingManager testingManager;
     private final PhoneNumberUtil phoneNumberUtil;
@@ -96,6 +104,7 @@ public class RegistrationViewModel extends BaseViewModel {
         super(application);
         preferencesManager = this.application.getPreferencesManager();
         registrationManager = this.application.getRegistrationManager();
+        networkManager = this.application.getNetworkManager();
         checkInManager = this.application.getCheckInManager();
         testingManager = this.application.getTestingManager();
         phoneNumberUtil = PhoneNumberUtil.getInstance();
@@ -251,11 +260,25 @@ public class RegistrationViewModel extends BaseViewModel {
         QrCodeViewModel qrViewModel = new QrCodeViewModel(application);
 
         String url = "https://192.168.178.28/webapp/429c807a-afce-4804-9559-f73d9ca2368d#e30";
-        Single<UUID> scannerId = qrViewModel.getScannerIdFromUrl(url);
-        Single<String> additionalData = application.getRegistrationManager()
-                .getOrCreateRegistrationData()
-                .map(MeetingAdditionalData::new)
-                .map(meetingAdditionalData -> new Gson().toJson(meetingAdditionalData));
+
+        CheckInRequestData data = new CheckInRequestData();
+        data.setDeviceType(0);
+
+        data.setUnixTimestamp(System.currentTimeMillis() / 1000L);
+
+        Single<UUID> scannerId = QrCodeViewModel.getScannerIdFromUrl(url);
+        data.setScannerId(scannerId.blockingGet().toString());
+
+        String traceId = qrViewModel.getTraceId().toString();
+        data.setTraceId(traceId);
+
+        data.setScannerEphemeralPublicKey("vc5MBQb2X7J6L9dbXfe5krRmlZtJrqDvf1A7Z6th0uOQupNqr51bU2EdEA04u4yINe7wpeXlAbS3YkUTN3aKtpo2");
+
+        data.setIv("123456789012345678901234");
+
+        data.setReEncryptedQrCodeData("123456789012345678901234");
+
+        data.setMac("jB8bb4Esd2OOGdmRD8VRl2dAZkRvB4RwxnPlo5QtkMXq");
 
         modelDisposable.add(updateRegistrationDataWithFormValues()
                 .andThen(registrationManager.registerUser())
@@ -266,9 +289,8 @@ public class RegistrationViewModel extends BaseViewModel {
                 })
                 .doOnComplete(() -> updateAsSideEffect(completed, true))
                 .doFinally(() -> updateAsSideEffect(isLoading, false))
-                .andThen(Single.zip(scannerId, qrViewModel.generateQrCodeData(), Pair::new))
-                .flatMapCompletable((data -> checkInManager.checkIn(data.first, data.second)))
-                .subscribeOn(Schedulers.io())
+                .andThen(Single.just(data))
+                .flatMapCompletable(checkInData -> networkManager.getLucaEndpoints().checkIn(checkInData))
                 .subscribe(() -> Timber.i("User registered")));
     }
 

@@ -219,6 +219,10 @@ public class QrCodeViewModel extends BaseViewModel implements ImageAnalysis.Anal
                         .doFinally(() -> updateAsSideEffect(isLoading, false)));
     }
 
+    public byte[] getTraceId() {
+        return cryptoManager.getTraceIdWrapper(userId).blockingGet().getTraceId();
+    }
+
     public Single<QrCodeData> generateQrCodeData() {
         return Single.just(new QrCodeData())
                 .flatMap(qrCodeData -> cryptoManager.getTraceIdWrapper(userId)
