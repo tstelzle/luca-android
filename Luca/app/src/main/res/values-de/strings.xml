@@ -79,6 +79,10 @@
     <string name="welcome_privacy_checkbox_content_description">Datenschutzerklärung</string>
     <string name="welcome_action">Los geht\'s!</string>
 
+    <!-- Fake Check-In -->
+    <string name="fake_check_in_app_name">Fake Check-In</string>
+    <string name="fake_checkin_action">Check-In!</string>
+
     <!-- Pre-Registration -->
     <string name="pre_registration_heading">Deine Daten</string>
     <string name="pre_registration_description">Bitte gib im nächsten Schritt deine Kontaktdaten an.\n\nDeine Daten werden verschlüsselt. Nur Gesundheitsämter können sie im Rahmen einer Kontaktnachverfolgung wieder entschlüsseln.</string>

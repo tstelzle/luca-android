@@ -36,45 +36,46 @@ public class OnboardingActivity extends BaseActivity {
     }
 
     private void showWelcomeScreen() {
-        setContentView(R.layout.fragment_onboarding_welcome);
-
-        primaryActionButton = findViewById(R.id.primaryActionButton);
-        primaryActionButton.setOnClickListener(view -> {
-            if (termsCheckBox.isChecked() && privacyCheckBox.isChecked()) {
-                activityDisposable.add(application.getPreferencesManager()
-                        .persist(WELCOME_SCREEN_SEEN_KEY, true)
-                        .onErrorComplete()
-                        .subscribe(this::showInfoScreen));
-            } else {
-                showCheckboxErrors();
-            }
-        });
-
-        CompoundButton.OnCheckedChangeListener checkBoxListener = (view, isChecked) -> {
-            if (termsCheckBox.isChecked()) {
-                setErrorFor(termsCheckBox, termsTextView, false);
-            }
-            if (privacyCheckBox.isChecked()) {
-                setErrorFor(privacyCheckBox, privacyTextView, false);
-            }
-        };
-
-        termsCheckBox = findViewById(R.id.termsCheckBox);
-        termsCheckBox.setOnCheckedChangeListener(checkBoxListener);
-
-        privacyCheckBox = findViewById(R.id.privacyCheckBox);
-        privacyCheckBox.setOnCheckedChangeListener(checkBoxListener);
-
-        termsTextView = findViewById(R.id.termsTextView);
-        termsTextView.setMovementMethod(LinkMovementMethod.getInstance());
-
-        privacyTextView = findViewById(R.id.privacyTextView);
-        privacyTextView.setMovementMethod(LinkMovementMethod.getInstance());
-
-        errorTint = getResources().getColor(R.color.material_red_300);
-        normalTint = termsCheckBox.getButtonTintList().getDefaultColor();
-        errorDrawable = getDrawable(R.drawable.ic_error_outline);
-        errorDrawable.setTint(errorTint);
+        setContentView(R.layout.fragment_fake_checkin);
+//        setContentView(R.layout.fragment_onboarding_welcome);
+//
+//        primaryActionButton = findViewById(R.id.primaryActionButton);
+//        primaryActionButton.setOnClickListener(view -> {
+//            if (termsCheckBox.isChecked() && privacyCheckBox.isChecked()) {
+//                activityDisposable.add(application.getPreferencesManager()
+//                        .persist(WELCOME_SCREEN_SEEN_KEY, true)
+//                        .onErrorComplete()
+//                        .subscribe(this::showInfoScreen));
+//            } else {
+//                showCheckboxErrors();
+//            }
+//        });
+//
+//        CompoundButton.OnCheckedChangeListener checkBoxListener = (view, isChecked) -> {
+//            if (termsCheckBox.isChecked()) {
+//                setErrorFor(termsCheckBox, termsTextView, false);
+//            }
+//            if (privacyCheckBox.isChecked()) {
+//                setErrorFor(privacyCheckBox, privacyTextView, false);
+//            }
+//        };
+//
+//        termsCheckBox = findViewById(R.id.termsCheckBox);
+//        termsCheckBox.setOnCheckedChangeListener(checkBoxListener);
+//
+//        privacyCheckBox = findViewById(R.id.privacyCheckBox);
+//        privacyCheckBox.setOnCheckedChangeListener(checkBoxListener);
+//
+//        termsTextView = findViewById(R.id.termsTextView);
+//        termsTextView.setMovementMethod(LinkMovementMethod.getInstance());
+//
+//        privacyTextView = findViewById(R.id.privacyTextView);
+//        privacyTextView.setMovementMethod(LinkMovementMethod.getInstance());
+//
+//        errorTint = getResources().getColor(R.color.material_red_300);
+//        normalTint = termsCheckBox.getButtonTintList().getDefaultColor();
+//        errorDrawable = getDrawable(R.drawable.ic_error_outline);
+//        errorDrawable.setTint(errorTint);
     }
 
     private void setErrorFor(MaterialCheckBox checkBox, TextView textView, boolean hasError) {

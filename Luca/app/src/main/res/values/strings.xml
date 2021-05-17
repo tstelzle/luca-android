@@ -80,6 +80,10 @@
     <string name="welcome_privacy_checkbox_content_description">Privacy Policy</string>
     <string name="welcome_action">Get started!</string>
 
+    <!-- Fake Check-In -->
+    <string name="fake_check_in_app_name">Fake Check-In</string>
+    <string name="fake_checkin_action">Check-In!</string>
+
     <!-- Pre-Registration -->
     <string name="pre_registration_heading">Your contact data</string>
     <string name="pre_registration_description">Please enter your contact data in the next step.\n\nYour data will be encrypted. Only a health department can decrypt it during contact tracing.</string>
