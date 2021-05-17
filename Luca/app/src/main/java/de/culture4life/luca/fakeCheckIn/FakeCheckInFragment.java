@@ -15,17 +15,36 @@ import org.jetbrains.annotations.NotNull;
 
 import de.culture4life.luca.R;
 import de.culture4life.luca.ui.BaseFragment;
+import io.reactivex.rxjava3.core.Completable;
+import timber.log.Timber;
 
 public class FakeCheckInFragment extends BaseFragment<FakeCheckInViewModel> {
 
     private MaterialButton checkInButton;
 
-    @Nullable
-    @org.jetbrains.annotations.Nullable
+    @NonNull
     @Override
-    public View onCreateView(@NonNull @NotNull LayoutInflater inflater, @Nullable @org.jetbrains.annotations.Nullable ViewGroup container, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
-        checkInButton = getView().findViewById(R.id.primaryActionButton);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return super.onCreateView(inflater, container, savedInstanceState);
+    }
+
+    @Override
+    protected Completable initializeViews() {
+        return super.initializeViews()
+                .andThen(Completable.fromAction(() -> {
+                    initializeSharedViews();
+                }));
+    }
+
+    private void initializeSharedViews() {
+        checkInButton = getView().findViewById(R.id.primaryActionButton);
+
+        checkInButton.setOnClickListener(v -> viewDisposable.add(Completable.fromAction(
+                () -> {
+                    Timber.i("Fake Check In clicked");
+                    viewModel.onFakeRegistrationRequested();
+                })
+                .subscribe()));
     }
 
     protected int getLayoutResource() {

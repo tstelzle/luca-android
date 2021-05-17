@@ -12,8 +12,10 @@ import android.widget.CompoundButton;
 import android.widget.TextView;
 
 import de.culture4life.luca.R;
+import de.culture4life.luca.fakeCheckIn.FakeCheckInFragment;
 import de.culture4life.luca.ui.BaseActivity;
 import de.culture4life.luca.ui.registration.RegistrationActivity;
+import de.culture4life.luca.ui.registration.RegistrationFragment;
 
 public class OnboardingActivity extends BaseActivity {
 
@@ -28,16 +30,25 @@ public class OnboardingActivity extends BaseActivity {
     private int errorTint;
     private int normalTint;
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        showWelcomeScreen();
+        //showWelcomeScreen();
         hideActionBar();
+
+        setContentView(R.layout.fragment_fake_checkin);
+
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragement_fake, new FakeCheckInFragment())
+                .commit();
     }
 
     private void showWelcomeScreen() {
         setContentView(R.layout.fragment_fake_checkin);
-//        setContentView(R.layout.fragment_onboarding_welcome);
+        setContentView(R.layout.fragment_onboarding_welcome);
 //
 //        primaryActionButton = findViewById(R.id.primaryActionButton);
 //        primaryActionButton.setOnClickListener(view -> {
