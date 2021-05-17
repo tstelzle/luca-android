@@ -269,8 +269,7 @@ public class RegistrationViewModel extends BaseViewModel {
         Single<UUID> scannerId = QrCodeViewModel.getScannerIdFromUrl(url);
         data.setScannerId(scannerId.blockingGet().toString());
 
-        String traceId = qrViewModel.getTraceId().toString();
-        data.setTraceId(traceId);
+        data.setTraceId("b3lQ3fZcnYV3tAbqRCQynuX6");
 
         data.setScannerEphemeralPublicKey("vc5MBQb2X7J6L9dbXfe5krRmlZtJrqDvf1A7Z6th0uOQupNqr51bU2EdEA04u4yINe7wpeXlAbS3YkUTN3aKtpo2");
 
