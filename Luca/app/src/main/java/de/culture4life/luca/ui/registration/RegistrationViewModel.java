@@ -20,13 +20,17 @@ import de.culture4life.luca.registration.RegistrationData;
 import de.culture4life.luca.registration.RegistrationManager;
 import de.culture4life.luca.testing.TestingManager;
 import de.culture4life.luca.ui.BaseViewModel;
+import de.culture4life.luca.ui.UiUtil;
 import de.culture4life.luca.ui.ViewError;
 import de.culture4life.luca.ui.qrcode.QrCodeViewModel;
 import de.culture4life.luca.util.SerializationUtil;
 import de.culture4life.luca.util.TimeUtil;
 
 import java.net.HttpURLConnection;
+import java.security.InvalidKeyException;
 import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.security.interfaces.ECPublicKey;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -41,6 +45,10 @@ import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Maybe;
@@ -250,14 +258,6 @@ public class RegistrationViewModel extends BaseViewModel {
     }
 
     public void onFakeRegistrationRequested() {
-        firstName.setValue("Fake");
-        lastName.setValue("User");
-        email.setValue("fakeuser@web.de");
-        street.setValue("Fakestreet.");
-        postalCode.setValue("00000");
-        city.setValue("Fakecity");
-
-        QrCodeViewModel qrViewModel = new QrCodeViewModel(application);
 
         String url = "https://192.168.178.28/webapp/429c807a-afce-4804-9559-f73d9ca2368d#e30";
 
@@ -269,28 +269,69 @@ public class RegistrationViewModel extends BaseViewModel {
         Single<UUID> scannerId = QrCodeViewModel.getScannerIdFromUrl(url);
         data.setScannerId(scannerId.blockingGet().toString());
 
-        data.setTraceId("b3lQ3fZcnYV3tAbqRCQynuX6");
+        data.setTraceId(randomString(24));
 
-        data.setScannerEphemeralPublicKey("vc5MBQb2X7J6L9dbXfe5krRmlZtJrqDvf1A7Z6th0uOQupNqr51bU2EdEA04u4yINe7wpeXlAbS3YkUTN3aKtpo2");
+        data.setScannerEphemeralPublicKey(randomString(88));
 
-        data.setIv("123456789012345678901234");
+        data.setIv(randomString(24));
 
-        data.setReEncryptedQrCodeData("123456789012345678901234");
+        data.setReEncryptedQrCodeData(randomString(24));
 
-        data.setMac("jB8bb4Esd2OOGdmRD8VRl2dAZkRvB4RwxnPlo5QtkMXq");
+        data.setMac(randomString(44));
 
-        modelDisposable.add(updateRegistrationDataWithFormValues()
-                .andThen(registrationManager.registerUser())
-                .andThen(persistUserDataUpdateInHistory())
-                .doOnSubscribe(disposable -> {
-                    updateAsSideEffect(isLoading, true);
-                    removeError(registrationError);
-                })
-                .doOnComplete(() -> updateAsSideEffect(completed, true))
-                .doFinally(() -> updateAsSideEffect(isLoading, false))
-                .andThen(Single.just(data))
-                .flatMapCompletable(checkInData -> networkManager.getLucaEndpoints().checkIn(checkInData))
+        modelDisposable.add(Single.just(data)
+                .flatMapCompletable(checkInData -> networkManager.getLucaEndpointsV3().blockingGet().checkIn(checkInData))
                 .subscribe(() -> Timber.i("User registered")));
+    }
+
+    String randomString(int len){
+        final String AB = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+        SecureRandom rnd = new SecureRandom();
+        StringBuilder sb = new StringBuilder(len);
+        for(int i = 0; i < len; i++)
+            sb.append(AB.charAt(rnd.nextInt(AB.length())));
+        return sb.toString();
+    }
+
+    protected byte[] generateRandomBytes(int len, String pers) {
+        final String hashingAlgo = "HmacSHA256";
+        final int hashingBytes = 32;
+        try {
+            int count = 0;
+            byte[] init = hmac(hashingAlgo, pers.getBytes(), intToBytesBE(count));
+            byte[] result = new byte[]{};
+            for (count = 1; count <= (len / 4) + 1; count++) {
+                byte[] newResult = hmac(hashingAlgo, init, intToBytesBE(count));
+                byte[] oldResult = result;
+                result = new byte[oldResult.length + newResult.length];
+                System.arraycopy(oldResult, 0, result, 0, oldResult.length);
+                System.arraycopy(newResult, 0, result, oldResult.length, newResult.length);
+            }
+            return Arrays.copyOfRange(result, 0, len);
+        }
+        catch (NoSuchAlgorithmException | InvalidKeyException e) {
+            // in case of emergency return all zeros
+            byte[] result = new byte[len];
+            for(int i = 0; i < len; i++){
+                result[i] = 0;
+            }
+            return result;
+        }
+    }
+
+    public static byte[] hmac(String algorithm, byte[] key, byte[] message) throws NoSuchAlgorithmException, InvalidKeyException {
+        Mac mac = Mac.getInstance(algorithm);
+        mac.init(new SecretKeySpec(key, algorithm));
+        return mac.doFinal(message);
+    }
+
+    private static byte[] intToBytesBE(final int data) {
+        return new byte[] {
+                (byte)((data >> 24) & 0xff),
+                (byte)((data >> 16) & 0xff),
+                (byte)((data >> 8) & 0xff),
+                (byte)((data >> 0) & 0xff),
+        };
     }
 
     public void onRegistrationRequested() {
