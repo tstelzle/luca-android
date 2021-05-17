@@ -15,12 +15,9 @@ import org.jetbrains.annotations.NotNull;
 
 import de.culture4life.luca.R;
 import de.culture4life.luca.ui.BaseFragment;
-import de.culture4life.luca.ui.registration.RegistrationViewModel;
 
-public class FakeCheckInFragment extends Fragment {
+public class FakeCheckInFragment extends BaseFragment<FakeCheckInViewModel> {
 
-    private int amount_fake_checkins = 1;
-    private String location_url = "";
     private MaterialButton checkInButton;
 
     @Nullable
@@ -31,24 +28,13 @@ public class FakeCheckInFragment extends Fragment {
         return super.onCreateView(inflater, container, savedInstanceState);
     }
 
-    public int getAmount_fake_checkins() {
-        return amount_fake_checkins;
-    }
-
-    public void setAmount_fake_checkins(int amount_fake_checkins) {
-        this.amount_fake_checkins = amount_fake_checkins;
-    }
-
-    public String getLocation_url() {
-        return location_url;
-    }
-
-    public void setLocation_url(String location_url) {
-        this.location_url = location_url;
-    }
-
     protected int getLayoutResource() {
         return R.layout.fragment_fake_checkin;
+    }
+
+    @Override
+    protected Class<FakeCheckInViewModel> getViewModelClass() {
+        return FakeCheckInViewModel.class;
     }
 
 }
